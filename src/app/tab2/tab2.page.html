@@ -19,6 +19,10 @@
         Vymazat vše
       </ion-button>
     </div>
+    <div class="counter-range">
+      <p>Minimální hodnota: <strong>{{ minimumValue() }}</strong></p>
+      <p>Maximální hodnota: <strong>{{ maximumValue() }}</strong></p>
+    </div>
 
     <ion-list>
       @for (counter of counterService.counters(); track counter.id) {

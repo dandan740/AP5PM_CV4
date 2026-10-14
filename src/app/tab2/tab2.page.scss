@@ -5,6 +5,14 @@ ion-list,
   margin: 1rem auto;
 }
 
+.counter-range {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
 .history-header {
   display: flex;
   align-items: center;

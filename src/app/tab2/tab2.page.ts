@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import {
   IonButton,
@@ -34,6 +34,24 @@ import { CounterService } from '../services/counter.service';
 })
 export class Tab2Page implements OnInit {
   readonly counterService = inject(CounterService);
+  readonly minimumValue = computed(() => {
+    const counters = this.counterService.counters();
+    return counters.length > 0
+      ? counters.reduce(
+          (minimum, counter) => Math.min(minimum, counter.value),
+          counters[0].value,
+        )
+      : null;
+  });
+  readonly maximumValue = computed(() => {
+    const counters = this.counterService.counters();
+    return counters.length > 0
+      ? counters.reduce(
+          (maximum, counter) => Math.max(maximum, counter.value),
+          counters[0].value,
+        )
+      : null;
+  });
 
   async ngOnInit(): Promise<void> {
     await this.counterService.initialize();
