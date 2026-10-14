@@ -47,24 +47,70 @@ describe('CounterService', () => {
     service = TestBed.inject(CounterService);
   });
 
-  it('should initialize only once', async () => {
-    // Dvě volání bez čekání simulují souběžné požadavky na inicializaci.
+  it('should fungovat pls', async () => {
     await Promise.all([service.initialize(), service.initialize()]);
 
-    // Další volání proběhne až po dokončení první inicializace.
     await service.initialize();
 
-    // Všechna volání musí sdílet jedinou operaci načtení Preferences.
     expect(getMock).toHaveBeenCalledTimes(1);
 
-    // Služba dokončila inicializaci a při value: null má prázdnou historii.
     expect(service.initialized()).toBe(true);
     expect(service.counters()).toEqual([]);
 });
-//TODO: doplnění testovacích případů
-//1.) Načtení uložených dat – JSON obsahující pole SavedCounter se po initialize() objeví v counters().
-//2.) Přidání záznamu – add() vloží nový záznam na začátek a zavolá Preferences.set() se správným klíčem a JSON hodnotou.
-//3.) Odstranění jednoho záznamu – remove(id) odstraní pouze odpovídající objekt a nový stav uloží.
-//4.) Vymazání historie – clear() vyprázdní signal a zavolá Preferences.remove() pouze pro klíč saved-counters.
-//5.) Poškozená uložená hodnota – neplatný JSON nezpůsobí pád testu; služba nastaví prázdnou historii, dokončí inicializaci a zapíše chybu do konzole.
+
+  it('meli by se nacist ulozene pocitadla', async () => {
+    getMock.mockResolvedValue({ value: JSON.stringify([first, second]) });
+
+    await service.initialize();
+
+    expect(service.counters()).toEqual([first, second]);
+  });
+
+  it('funguje pridavani zaznamu', async () => {
+    await service.initialize();
+
+    await service.add(first);
+
+    expect(service.counters()).toEqual([first]);
+    expect(setMock).toHaveBeenCalledWith({
+      key: 'saved-counters',
+      value: JSON.stringify([first]),
+    });
+  });
+
+  it('funguje odebirani jednoho zaznamu', async () => {
+    getMock.mockResolvedValue({ value: JSON.stringify([first, second]) });
+    await service.initialize();
+
+    await service.remove(first.id);
+
+    expect(service.counters()).toEqual([second]);
+    expect(setMock).toHaveBeenCalledWith({
+      key: 'saved-counters',
+      value: JSON.stringify([second]),
+    });
+  });
+
+  it('funguje mazani historie a vola Pref.remove() jenom na pocitadlo', async () => {
+    getMock.mockResolvedValue({ value: JSON.stringify([first, second]) });
+    await service.initialize();
+
+    await service.clear();
+
+    expect(service.counters()).toEqual([]);
+    expect(removeMock).toHaveBeenCalledTimes(1);
+    expect(removeMock).toHaveBeenCalledWith({ key: 'saved-counters' });
+  });
+
+  it('funguje zpracovani neplatneho JSONu a logovani chyby', async () => {
+    getMock.mockResolvedValue({ value: '{rozbity json :)' });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(service.initialize()).resolves.toBeUndefined();
+
+    expect(service.initialized()).toBe(true);
+    expect(service.counters()).toEqual([]);
+    expect(errorSpy).toHaveBeenCalledWith('Historii počítadel se nepodařilo načíst.', expect.any(Error));
+    errorSpy.mockRestore();
+  });
 });

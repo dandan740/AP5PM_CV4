@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { SavedCounter } from '../../models/saved-counter';
-import { CounterComponent } from './counter.component';
+import { SavedCounter } from './models/saved-counter';
+import { CounterComponent } from './components/counter/counter.component';
 
 describe('CounterComponent', () => {
   let component: CounterComponent;
